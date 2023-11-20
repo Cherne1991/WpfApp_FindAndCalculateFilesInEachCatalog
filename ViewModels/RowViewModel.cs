@@ -75,18 +75,11 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             {
                 await Task.Run(() =>
                 {
-                    try
-                    {
-                        var files = SafeReadDirectory.EnumerateFiles(DirectoryName, "*.*", SearchOption.AllDirectories, true);
+                    var files = SafeReadDirectory.EnumerateFiles(DirectoryName, "*.*", SearchOption.AllDirectories, true);
 
-                        //TradionalSearchFiles(files);
+                    //TradionalSearchFiles(files);
 
-                        PararellSeacrhFiles(files);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine(e.Message);
-                    }
+                    PararellSeacrhFiles(files);
                 }, _cancellationToken);
             }
             catch (OperationCanceledException e)
@@ -100,9 +93,10 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             foreach (var file in files)
             {
                 if (_cancellationToken.IsCancellationRequested)
-                    break;
+                    return;
 
-                _pauseEvent.WaitOne();
+                if (!_pauseEvent.SafeWaitHandle.IsClosed)
+                    _pauseEvent.WaitOne();
 
                 Thread.Sleep(10);
 
@@ -120,7 +114,8 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
                     if (_cancellationToken.IsCancellationRequested)
                         return;
 
-                    _pauseEvent.WaitOne();
+                    if (!_pauseEvent.SafeWaitHandle.IsClosed)
+                        _pauseEvent.WaitOne();
 
                     FileCount++;
                     TotalSize += Extensions.GetFileSize(file);
@@ -131,23 +126,35 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
                 ParallelOptions options = new()
                 {
                     CancellationToken = _cancellationToken,
-                    MaxDegreeOfParallelism = Environment.ProcessorCount
+                    MaxDegreeOfParallelism = Environment.ProcessorCount,
                 };
 
-                Parallel.ForEach(files, options, () => 0,
-                    (file, loopState, localCount) =>
-                    {
-                        if (!_pauseEvent.SafeWaitHandle.IsClosed)
-                            _pauseEvent.WaitOne();
+                //options.CancellationToken.Register(() => Debug.WriteLine("PararellSeacrhFiles -> Parallel -> Cancelled"));
 
-                        Thread.Sleep(10);
+                try
+                {
+                    Parallel.ForEach(files, options,
+                        (file, loopState, localCount) =>
+                        {
+                            if (_cancellationToken.IsCancellationRequested)
+                            {
+                                loopState.Break();
+                                return;
+                            }
 
-                        FileCount++;
-                        TotalSize += Extensions.GetFileSize(file);
+                            if (!_pauseEvent.SafeWaitHandle.IsClosed)
+                                _pauseEvent.WaitOne();
 
-                        return (int)++localCount;
-                    },
-                    _ => { });
+                            FileCount++;
+                            TotalSize += Extensions.GetFileSize(file);
+
+                            Thread.Sleep(10);
+                        });
+                }
+                catch (Exception e)
+                {
+                    //Debug.WriteLine("PararellSeacrhFiles -> Parallel -> " + e.Message);
+                }
             }
         }
     }

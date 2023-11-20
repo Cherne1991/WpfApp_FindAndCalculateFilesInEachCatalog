@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Windows;
 using WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels;
 
@@ -13,8 +14,6 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog
         public MainWindow()
         {
             InitializeComponent();
-
-            DataContext = _mainViewModel = new MainViewModel();
         }
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
@@ -32,6 +31,13 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog
             base.OnClosing(e);
 
             _mainViewModel.Dispose();
+        }
+
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+
+            DataContext = _mainViewModel = new MainViewModel();
         }
     }
 }

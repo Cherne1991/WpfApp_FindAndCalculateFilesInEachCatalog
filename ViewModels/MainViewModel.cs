@@ -170,10 +170,10 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             {
                 try
                 {
-                    _pauseEvent.WaitOne();
-
                     if (_cancellationTokenSource?.IsCancellationRequested ?? true)
                         break;
+
+                    _pauseEvent.WaitOne();
 
                     var dirFiles = Directory.EnumerateFiles(item, "*.*");
                     var hasAnyFileMore10MB = dirFiles.Any(file => Extensions.GetFileSize(file) > File10MB);
@@ -221,7 +221,8 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
                 if (_cancellationTokenSource?.IsCancellationRequested ?? true)
                     break;
 
-                _pauseEvent.WaitOne();
+                if (!_pauseEvent.SafeWaitHandle.IsClosed)
+                    _pauseEvent.WaitOne();
 
                 TotalFileCount++;
                 TotalFileSize += new FileInfo(file).Length;
@@ -233,8 +234,6 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
         public override void Dispose()
         {
             base.Dispose();
-
-            ResetSearch();
 
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = null;
@@ -256,6 +255,8 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             _pauseEvent?.Close();
 
             _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
     }
 }

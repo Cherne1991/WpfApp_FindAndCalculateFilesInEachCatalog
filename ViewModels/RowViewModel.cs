@@ -111,8 +111,6 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
                 if (!_pauseEvent.SafeWaitHandle.IsClosed)
                     _pauseEvent.WaitOne();
 
-                Thread.Sleep(10);
-
                 FileCount++;
                 TotalSize += Extensions.GetFileSize(file);
             }
@@ -160,8 +158,6 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 
                             FileCount++;
                             TotalSize += Extensions.GetFileSize(file);
-
-                            Thread.Sleep(10);
                         });
                 }
                 catch (Exception e)

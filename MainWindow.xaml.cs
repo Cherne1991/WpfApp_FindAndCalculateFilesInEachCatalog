@@ -37,7 +37,10 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog
         {
             base.OnActivated(e);
 
-            DataContext = _mainViewModel = new MainViewModel();
+            if (DataContext == null)
+            {
+                DataContext = _mainViewModel ??= new MainViewModel();
+            }
         }
     }
 }

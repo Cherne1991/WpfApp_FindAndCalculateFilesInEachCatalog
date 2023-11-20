@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Shapes;
 
 namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 {
@@ -116,13 +115,6 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             {
                 DriveSelectedItem = Drives.First();
             }
-
-            Drives.Add(@"D:\Фото и видео");
-
-            if (Drives.Count > 0)
-            {
-                DriveSelectedItem = Drives.Last();
-            }
         }
 
         public async void Search()
@@ -224,8 +216,6 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 
                 TotalFileCount++;
                 TotalFileSize += new FileInfo(file).Length;
-
-                Thread.Sleep(1);
             }
         }
 

@@ -27,7 +27,8 @@
         <ListView x:Name="fileListView" Grid.Row="1" ItemsSource="{Binding CatalogList}" VerticalAlignment="Stretch">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Directory" DisplayMemberBinding="{Binding DirectoryName}" Width="500"/>
+                    <GridViewColumn Header="Directory" DisplayMemberBinding="{Binding DirectoryName}" Width="300"/>
+                    <GridViewColumn Header="Full Path" DisplayMemberBinding="{Binding FullPath}" Width="200"/>
                     <GridViewColumn Header="File Count" DisplayMemberBinding="{Binding FileCount}" Width="100"/>
                     <GridViewColumn Header="Total Size (MB)" DisplayMemberBinding="{Binding TotalSize, Converter={StaticResource FileSizeConverter}}" Width="100"/>
                 </GridView>

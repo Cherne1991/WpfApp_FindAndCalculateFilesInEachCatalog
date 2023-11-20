@@ -7,7 +7,7 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog
 {
     public static class SafeReadDirectory
     {
-        public static IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOpt, bool touchAllFiles = false)
+        public static IEnumerable<string> EnumerateFiles(string path, string searchPattern, SearchOption searchOpt)
         {
             try
             {

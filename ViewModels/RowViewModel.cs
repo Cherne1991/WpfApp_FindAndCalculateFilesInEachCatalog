@@ -14,9 +14,10 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
         private readonly ManualResetEvent _pauseEvent;
         private int _procCount = Environment.ProcessorCount;
 
-        public RowViewModel(string directoryName, ManualResetEvent pauseEvent, CancellationToken cancellationToken)
+        public RowViewModel(string directoryName, string fullPath, ManualResetEvent pauseEvent, CancellationToken cancellationToken)
         {
             _directoryName = directoryName;
+            _fullPath = fullPath;
             _pauseEvent = pauseEvent;
             _cancellationToken = cancellationToken;
         }
@@ -30,6 +31,18 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             {
                 _directoryName = value;
                 OnPropertyChanged(nameof(DirectoryName));
+            }
+        }
+
+        private string _fullPath;
+
+        public string FullPath
+        {
+            get => _fullPath;
+            set
+            {
+                _directoryName = value;
+                OnPropertyChanged(nameof(FullPath));
             }
         }
 
@@ -75,11 +88,11 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             {
                 await Task.Run(() =>
                 {
-                    var files = SafeReadDirectory.EnumerateFiles(DirectoryName, "*.*", SearchOption.AllDirectories, true);
+                    var files = SafeReadDirectory.EnumerateFiles(_fullPath, "*.*", SearchOption.AllDirectories);
 
-                    //TradionalSearchFiles(files);
+                    //TraditionalFilesCountAndSize(files);
 
-                    PararellSeacrhFiles(files);
+                    PararellCalculatingFilesCountAndSize(files);
                 }, _cancellationToken);
             }
             catch (OperationCanceledException e)
@@ -88,7 +101,7 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             }
         }
 
-        private void TradionalSearchFiles(IEnumerable<string> files)
+        private void TraditionalFilesCountAndSize(IEnumerable<string> files)
         {
             foreach (var file in files)
             {
@@ -105,7 +118,7 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             }
         }
 
-        private void PararellSeacrhFiles(IEnumerable<string> files)
+        private void PararellCalculatingFilesCountAndSize(IEnumerable<string> files)
         {
             if (files.Count() < _procCount)
             {

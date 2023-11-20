@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Shapes;
 
 namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 {
@@ -164,9 +165,14 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 
         private void CalculatingInFileCountAndSizeEachCatalog()
         {
-            var dirs = SafeReadDirectory.GetDirectories(DriveSelectedItem, "*", SearchOption.AllDirectories);
+            // First iterate through all files, then filter more than 10 MB, group the directory and display it in the catalog list
+            var catalogsHaveFilesMore10MB = SafeReadDirectory.EnumerateFiles(DriveSelectedItem, "*.*", SearchOption.AllDirectories)
+                .Where(f => Extensions.GetFileSize(f) > File10MB)
+                .Select(s => System.IO.Path.GetDirectoryName(s))
+                .GroupBy(g => g)
+                .Select(s => s.Key);
 
-            foreach (var item in dirs)
+            foreach (var catalog in catalogsHaveFilesMore10MB)
             {
                 try
                 {
@@ -175,19 +181,11 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 
                     _pauseEvent.WaitOne();
 
-                    var dirFiles = Directory.EnumerateFiles(item, "*.*");
-                    var hasAnyFileMore10MB = dirFiles.Any(file => Extensions.GetFileSize(file) > File10MB);
+                    var rowViewModel = new RowViewModel(new DirectoryInfo(catalog).Name, catalog, _pauseEvent, _cancellationTokenSource.Token);
 
-                    if (hasAnyFileMore10MB)
-                    {
-                        var rowViewModel = new RowViewModel(item, _pauseEvent, _cancellationTokenSource.Token);
+                    rowViewModel.Calculate();
 
-                        rowViewModel.Calculate();
-
-                        App.Current.Dispatcher.Invoke(() => CatalogList.Add(rowViewModel));
-                    }
-
-                    Thread.Sleep(1);
+                    App.Current.Dispatcher.Invoke(() => CatalogList.Add(rowViewModel));
                 }
                 catch (Exception e)
                 {
@@ -214,7 +212,7 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 
         private void CalculatingTotalFilesAndTheirSize()
         {
-            var filesAll = SafeReadDirectory.EnumerateFiles(DriveSelectedItem, "*.*", SearchOption.AllDirectories, true);
+            var filesAll = SafeReadDirectory.EnumerateFiles(DriveSelectedItem, "*.*", SearchOption.AllDirectories);
 
             foreach (var file in filesAll)
             {

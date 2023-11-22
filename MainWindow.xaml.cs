@@ -26,6 +26,11 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog
             _mainViewModel.PauseOrResume();
         }
 
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            _mainViewModel.Reset();
+        }
+
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);

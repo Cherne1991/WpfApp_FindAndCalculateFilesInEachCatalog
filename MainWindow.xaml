@@ -8,6 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
         <converters:FileSizeConverter x:Key="FileSizeConverter"></converters:FileSizeConverter>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"></converters:InverseBooleanConverter>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -20,8 +21,10 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
             <Label Content="Select Drive/Volume:" VerticalAlignment="Center"/>
             <ComboBox x:Name="driveComboBox" ItemsSource="{Binding Drives}" SelectedItem="{Binding DriveSelectedItem}" Width="100" Margin="5"/>
-            <Button x:Name="searchButton" Content="{Binding SearchOrResetText}" Width="100" Margin="5" Click="SearchButton_Click"/>
-            <Button x:Name="pauseResumeButton" Content="{Binding PauseResumeText}" Width="100" Margin="5" Click="PauseResumeButton_Click"  IsEnabled="{Binding IsRunSearch}"/>
+            <Button x:Name="resetButton" Content="Reset" Width="100" Margin="5" Click="ResetButton_Click"/>
+            <Button x:Name="searchButton" Content="{Binding SearchOrResetText}" Width="100" Margin="5" Click="SearchButton_Click" IsEnabled="{Binding IsRunSearch, Converter={StaticResource InverseBooleanConverter}}" />
+            <Button x:Name="pauseResumeButton" Content="{Binding PauseResumeText}" Width="100" Margin="5" Click="PauseResumeButton_Click" IsEnabled="{Binding IsRunSearch}" />
+            <TextBlock Text="{Binding SearchState}" VerticalAlignment="Center" Margin="10 0" />
         </StackPanel>
 
         <ListView x:Name="fileListView" Grid.Row="1" ItemsSource="{Binding CatalogList}" VerticalAlignment="Stretch"
@@ -32,7 +35,7 @@
                     <GridViewColumn Header="Directory" DisplayMemberBinding="{Binding DirectoryName}" Width="150"/>
                     <GridViewColumn Header="Full Path" DisplayMemberBinding="{Binding FullPath}" Width="300"/>
                     <GridViewColumn Header="File Count" DisplayMemberBinding="{Binding FileCount}" Width="100"/>
-                    <GridViewColumn Header="Total Size (MB)" DisplayMemberBinding="{Binding TotalSize, Converter={StaticResource FileSizeConverter}}" Width="100"/>
+                    <GridViewColumn Header="File Size (MB)" DisplayMemberBinding="{Binding FileSize, Converter={StaticResource FileSizeConverter}}" Width="100"/>
                 </GridView>
             </ListView.View>
         </ListView>

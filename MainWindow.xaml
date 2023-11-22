@@ -24,7 +24,9 @@
             <Button x:Name="pauseResumeButton" Content="{Binding PauseResumeText}" Width="100" Margin="5" Click="PauseResumeButton_Click"  IsEnabled="{Binding IsRunSearch}"/>
         </StackPanel>
 
-        <ListView x:Name="fileListView" Grid.Row="1" ItemsSource="{Binding CatalogList}" VerticalAlignment="Stretch">
+        <ListView x:Name="fileListView" Grid.Row="1" ItemsSource="{Binding CatalogList}" VerticalAlignment="Stretch"
+                  VirtualizingPanel.IsContainerVirtualizable="True"
+                  VirtualizingPanel.IsVirtualizing="True">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Directory" DisplayMemberBinding="{Binding DirectoryName}" Width="300"/>

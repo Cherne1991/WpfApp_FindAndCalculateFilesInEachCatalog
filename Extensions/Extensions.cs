@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using WpfApp_FindAndCalculateFilesInEachCatalog.Models;
 
 namespace WpfApp_FindAndCalculateFilesInEachCatalog
@@ -8,6 +9,7 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog
     {
         public static long GetFileSize(string file)
         {
+            Thread.Sleep(1000);
             return new FileInfo(file).Length;
         }
 

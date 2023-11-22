@@ -88,7 +88,7 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             {
                 await Task.Run(() =>
                 {
-                    var files = SafeReadDirectory.EnumerateFiles(_fullPath, "*.*", SearchOption.AllDirectories);
+                    var files = Directory.EnumerateFiles(_fullPath, "*.*", SearchOption.TopDirectoryOnly);
 
                     //TraditionalFilesCountAndSize(files);
 
@@ -134,6 +134,9 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
             }
             else
             {
+                long localFileCount = 0;
+                long localFileSize = 0;
+
                 ParallelOptions options = new()
                 {
                     CancellationToken = _cancellationToken,
@@ -144,20 +147,30 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
 
                 try
                 {
-                    Parallel.ForEach(files, options,
-                        (file, loopState, localCount) =>
+                    Parallel.ForEach(files, options, () => new MyFileInfo(),
+                        (file, loopState, localCount, tuple) =>
                         {
                             if (_cancellationToken.IsCancellationRequested)
                             {
                                 loopState.Break();
-                                return;
+                                return new MyFileInfo();
                             }
 
                             if (!_pauseEvent.SafeWaitHandle.IsClosed)
                                 _pauseEvent.WaitOne();
 
-                            FileCount++;
-                            TotalSize += Extensions.GetFileSize(file);
+                            tuple.LocalCount++;
+                            tuple.LocalSize += Extensions.GetFileSize(file);
+
+                            return tuple;
+                        },
+                        (tuple) =>
+                        {
+                            Interlocked.Add(ref localFileCount, tuple.LocalCount);
+                            Interlocked.Add(ref localFileSize, tuple.LocalSize);
+
+                            FileCount = localFileCount;
+                            TotalSize = localFileSize;
                         });
                 }
                 catch (Exception e)
@@ -165,6 +178,12 @@ namespace WpfApp_FindAndCalculateFilesInEachCatalog.ViewModels
                     //Debug.WriteLine("PararellSeacrhFiles -> Parallel -> " + e.Message);
                 }
             }
+        }
+
+        private class MyFileInfo
+        {
+            public long LocalSize = -1;
+            public long LocalCount = -1;
         }
     }
 }
